@@ -12,4 +12,11 @@ function setup() {
 
 function draw() {
   background(220);
+  let choice = random(100);
+  if (choice < 50) {
+    rect(100, 100, 50, 50);
+  }
+  else {
+    circle(100, 100, 50, 50);
+  }
 }
