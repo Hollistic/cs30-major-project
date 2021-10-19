@@ -8,6 +8,7 @@
 ## Must Have List
 
 - player plane physics
+- shooting
 - implementation of virtual camera (follows the player)
 - collidable asteroids
 - some type of non asteroids enemy
