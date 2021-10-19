@@ -16,4 +16,4 @@
 
 - main menu
 - points/upgrades system
-- new explorable areas, like "black holes" that take you to new areas after certain
+- new explorable areas
