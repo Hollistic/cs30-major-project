@@ -27,7 +27,8 @@ module.exports = {
 
         // disable rules from base configurations
         "no-console": "off",
-        "no-unused-vars": "off"
+        "no-unused-vars": "off",
+        "no-undef": "off"     //maybe turn this off to check your code later...
     },
     "globals": {
       //allow direct access to the DOM without errors

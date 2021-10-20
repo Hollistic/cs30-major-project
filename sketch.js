@@ -3,12 +3,16 @@
 // 10/19/2021
 //
 // Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+// - used p5.play library
 
 let sceneW;
 let sceneH;
-let playerShip;
 
+//ship values
+let ship;
+let shipImage;
+let shipWidth = 50;
+let shipHeight = 50;
 
 function setup() {
   //create window
@@ -22,28 +26,21 @@ function setup() {
   sceneW = width + width/2;
   sceneH = height + height/2;
   
-  //load sprites
-
-  //create ship
-  playerShip = new Ship(0, 0);
-  
-  
+  //load ship
+  shipImage = loadImage("assets/ship1.png");
+  createShip(width/2, height/2, 50, 50, 5);
 }
 
 function draw() {
   background(220);
+  drawSprites();
 }
 
-class Ship {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.sprite = createSprite(this.x, this.y, 50, 50);
-
-  }
-
-  display() {
-
-  }
-
+function createShip(x, y, width, height, speed) {
+  ship = createSprite(x, y, width, height);
+  ship.addImage("static", shipImage);
+  ship.addAnimation("accelerating", "assets/ship1.thrust");
+  ship.setCollider("rectangle", 0, 0, shipWidth, shipHeight);
+  ship.maxSpeed(speed);
+  ship.friction(0.99);
 }
