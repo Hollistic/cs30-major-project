@@ -5,6 +5,7 @@
 // Extra for Experts:
 // - used a new library called p5.play
 // - used a virtual camera to create an "open world" experience
+// - created my own pixel art for sprites
 
 let sceneW;
 let sceneH;
@@ -35,7 +36,7 @@ function setup() {
   asteroids = new Group();
 
   //create background group
-  rocksImg = loadImage("assets/rock.png");
+  starsImg = loadImage("assets/star.png");
   bg = new Group();
 
   createBG();
@@ -45,18 +46,21 @@ function draw() {
   clear();
   background(0);
 
+  controlCamera();
   shipControls();
-  drawSprites();
-  // controlCamera();
+
+  //ship is draw on top of background
+  drawSprites(bg);
+  drawSprite(ship);
 }
 
 //creates a new ship
-function createShip(x, y, w, h, mSpeed) {
+function createShip(x, y, w, h, speed) {
   ship = createSprite(x, y, w, h);
   ship.addImage("resting", shipRestImg);
   ship.addAnimation("accelerating", shipThrustImg);
   ship.setCollider("rectangle", 0, 0, w, h);
-  ship.maxSpeed = mSpeed;
+  ship.maxSpeed = speed;
   ship.friction = 0.02;
 }
 
@@ -80,15 +84,17 @@ function shipControls() {
 
 function createBG() {
   //create background elements
-  for (let i=0; i<75; i++) {
-    let rocks = createSprite(random(-width, sceneW+width), random(-height, sceneH+height));
-    rocks.addImage("rocks", rocksImg);
-    bg.add(rocks);
+  for (let i=0; i<200; i++) {
+    let stars = createSprite(random(-width, sceneW+width), random(-height, sceneH+height));
+    stars.addImage("stars", starsImg);
+    bg.add(stars);
   }
 }
 
 function controlCamera() {
   //camera follows ship
+  camera.on();
+  camera.zoom = 1.5;
   camera.position.x = ship.position.x;
-  camera.poistion.y = ship.position.y;
+  camera.position.y = ship.position.y;
 }
