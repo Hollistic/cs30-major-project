@@ -14,10 +14,11 @@ let marginH;
 
 //ship values
 let ship;
-let shipImage;
 
 //asteroids
 let asteroids;
+
+//let bullets
 
 function setup() {
   //create window
@@ -44,9 +45,13 @@ function setup() {
   shipThrustImg2 = loadImage("assets/playershipthrust2.png");
   createShip(width/2, height/2, 50, 50, 5);
 
+  //create bullets
+  bulletsImg = loadImage("assets/bullet.png");
+  bullets = new Group();
   
   //create asteroids group
   asteroidImg = loadImage("assets/asteroid_big.png");
+  astParticleImg = loadImage("assets/asteroid_particles.png");
   asteroids = new Group();
   for (let i=0; i<20; i++) {
     createAsteroid(random(width), random(height));
@@ -69,16 +74,19 @@ function draw() {
   controlCamera();
 
   shipControls();
-
+  
   //all sprites are drawn, goes by layer order
   drawSprites(bg);
   drawSprites(asteroids);
+  drawSprites(bullets);
   drawSprite(ship);
-
-  //makes objects bounce when collided
+  
+  //object collision
   asteroids.bounce(asteroids);
   ship.bounce(asteroids);
+  bullets.overlap(asteroids, bulletsHitAsteroid);
 
+  
   //checks if object is off screen
   checkOffScreen();
 
@@ -104,15 +112,32 @@ function createAsteroid(x, y) {
   asteroid.mass = random(1, 2);
   asteroid.setSpeed(random(0.5, 2), random(360));
   asteroid.rotationSpeed = random(0.2, 1);
+  asteroid.useQuadTree = true;
   asteroid.debug = true;
-  //  
+  
+  //size detection  
 
   //push to group
   asteroids.add(asteroid);
   return asteroid;
 }
 
+function createBullets() {
+  let bullet = createSprite(ship.position.x, ship.position.y);
+  bullet.addImage(bulletsImg);
+  bullet.life = 50;
+  bullet.rotateToDirection = true;
+  bullet.setSpeed(ship.getSpeed()+6, ship.rotation);
+  bullet.debug = true;
+  bullets.add(bullet);
+}
+
 function shipControls() {
+
+  if (keyWentDown("SPACE")) {
+    createBullets();
+  }
+
   if (keyDown("W")) {
     ship.changeAnimation("accelerating");
     ship.addSpeed(0.1, ship.rotation);
@@ -122,29 +147,29 @@ function shipControls() {
   }
   
   if (keyDown("A")) {
-    ship.rotation -= 3;
+    ship.rotation -= 2;
   }
 
   if (keyDown("D")) {
-    ship.rotation += 3;
+    ship.rotation += 2;
   }
 }
 
 function createBG() {
   //create background elements
-  for (let i=0; i<100; i++) {
-    let stars = createSprite(random(0-width, sceneW+width), random(-height, sceneH+height));
+  for (let i=0; i<50; i++) {
+    let stars = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
     stars.addImage("stars", starsImg);
     bg.add(stars);
   }
-  for (let i=0; i<200; i++) {
-    let smallStars = createSprite(random(-width, sceneW+width), random(-height, sceneH+height));
+  for (let i=0; i<150; i++) {
+    let smallStars = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
     smallStars.addImage("small-stars", smallStarsImg);
     bg.add(smallStars);
   }
 
-  for (let i=0; i<20; i++) {
-    let galaxies = createSprite(random(-width, sceneW+width), random(-height, sceneH+height));
+  for (let i=0; i<10; i++) {
+    let galaxies = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
     galaxies.addImage("galaxies", galaxyImg);
     bg.add(galaxies);
   }
@@ -196,4 +221,21 @@ function displayFramerate() {
   fill("limegreen");
   textSize(20);
   text("FPS: " + Math.floor(frameRate()), width/2, 50);
+}
+
+function bulletsHitAsteroid(bullets, asteroids) {
+  if (createBullets.life === 0) {
+    bullets.remove();
+  }
+
+  for (let i=0; i<20; i++) {
+    let particle = createSprite(asteroids.position.x, asteroids.position.y);
+    particle.addImage(astParticleImg);
+    particle.setSpeed(5, random(360));
+    particle.life = 10;
+    particle.friction = 0.1;
+  }
+
+  bullets.remove();
+  asteroids.remove();
 }
