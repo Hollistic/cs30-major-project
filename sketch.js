@@ -137,7 +137,7 @@ function createBG() {
     stars.addImage("stars", starsImg);
     bg.add(stars);
   }
-  for (let i=0; i<400; i++) {
+  for (let i=0; i<200; i++) {
     let smallStars = createSprite(random(-width, sceneW+width), random(-height, sceneH+height));
     smallStars.addImage("small-stars", smallStarsImg);
     bg.add(smallStars);
