@@ -53,7 +53,8 @@ function setup() {
   bullets = new Group();
   
   //create asteroids group
-  asteroidImg = loadImage("assets/asteroid_big.png");
+  asteroidImg = loadImage("assets/bigasteroid.png");
+  asteroidImg2 = loadImage("assets/bigasteroid2.png");
   astParticleImg = loadImage("assets/asteroid_particles.png");
   asteroids = new Group();
   particles = new Group();
@@ -107,13 +108,14 @@ function createShip(x, y, w, h, speed) {
   ship.addAnimation("accelerating", shipThrustImg, shipThrustImg2);
   ship.setCollider("rectangle", 0, 0, w/2, h/2);
   ship.maxSpeed = speed;
-  ship.friction = 0.02;
+  ship.friction = 0.02  ;
   ship.debug = true;
 }
 
 function createAsteroid(x, y) {
   let asteroid = createSprite(x, y);
-  asteroid.addImage("big-asteroids", asteroidImg);
+  asteroidSprite = random({asteroidImg, asteroidImg2});
+  asteroid.addImage(asteroidImg2);
   asteroid.setCollider("circle", 0, 0, 25);
   asteroid.mass = random(1, 2);
   asteroid.setSpeed(random(0.5, 2), random(360));
