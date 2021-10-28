@@ -19,6 +19,9 @@ let ship;
 let asteroids;
 
 //let bullets
+let bullets;
+
+let particles;
 
 function setup() {
   //create window
@@ -53,9 +56,11 @@ function setup() {
   asteroidImg = loadImage("assets/asteroid_big.png");
   astParticleImg = loadImage("assets/asteroid_particles.png");
   asteroids = new Group();
+  particles = new Group();
   for (let i=0; i<20; i++) {
     createAsteroid(random(width), random(height));
   } 
+
 
 
   //create background group
@@ -78,6 +83,7 @@ function draw() {
   //all sprites are drawn, goes by layer order
   drawSprites(bg);
   drawSprites(asteroids);
+  drawSprites(particles);
   drawSprites(bullets);
   drawSprite(ship);
   
@@ -223,23 +229,27 @@ function displayFramerate() {
   text("FPS: " + Math.floor(frameRate()), width/2, 50);
 }
 
-function bulletsHitAsteroid(bullets, asteroids) {
+function bulletsHitAsteroid(asteroids, bullets) {
   if (createBullets.life === 0) {
     bullets.remove();
   }
 
-  for (let i=0; i<20; i++) {
-    let particle = createSprite(asteroids.position.x, asteroids.position.y);
+  for (let i=0; i<5; i++) {
+    particle = createSprite(asteroids.position.x, asteroids.position.y);
     particle.addImage(astParticleImg);
-    particle.setSpeed(random(2, 5), random(360));
-    particle.life = 20;
+    particle.setSpeed(random(2, 7), random(360));
+    particle.life = 10;
     particle.friction = 0.05;
-    particle.scale = 2;
-    drawSprite(particle);
+    particle.scale = 0.5;
+    particles.add(particle);
+    if (particle.life === 0) {
+      particles.remove();
+    }
   }
-  
+
 
 
   bullets.remove();
   asteroids.remove();
+  createAsteroid(random(width), random(height));
 }
