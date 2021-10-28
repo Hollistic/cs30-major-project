@@ -231,10 +231,14 @@ function bulletsHitAsteroid(bullets, asteroids) {
   for (let i=0; i<20; i++) {
     let particle = createSprite(asteroids.position.x, asteroids.position.y);
     particle.addImage(astParticleImg);
-    particle.setSpeed(5, random(360));
-    particle.life = 10;
-    particle.friction = 0.1;
+    particle.setSpeed(random(2, 5), random(360));
+    particle.life = 20;
+    particle.friction = 0.05;
+    particle.scale = 2;
+    drawSprite(particle);
   }
+  
+
 
   bullets.remove();
   asteroids.remove();
