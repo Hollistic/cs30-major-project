@@ -7,6 +7,7 @@
 // - used a virtual camera to create an "open world" experience
 // - created my own pixel art for sprites
 
+//screen values
 let sceneW;
 let sceneH;
 let marginW;
@@ -57,12 +58,12 @@ function setup() {
   asteroidImg2 = loadImage("assets/bigasteroid2.png");
   astParticleImg = loadImage("assets/asteroid_particles.png");
   asteroids = new Group();
-  particles = new Group();
   for (let i=0; i<20; i++) {
     createAsteroid(random(width), random(height));
   } 
 
-
+  //oarticles
+  particles = new Group();
 
   //create background group
   starsImg = loadImage("assets/star.png");
@@ -99,6 +100,14 @@ function draw() {
 
   //displays framerate
   displayFramerate();
+  // createMiniMap();
+}
+
+function createMiniMap() {
+  
+  let miniMapW = 200;
+  let miniMapH = 200;
+  copy(0, 0, width, height, width-miniMapW, height - miniMapH, miniMapW, miniMapH);
 }
 
 //creates a new ship
@@ -108,15 +117,22 @@ function createShip(x, y, w, h, speed) {
   ship.addAnimation("accelerating", shipThrustImg, shipThrustImg2);
   ship.setCollider("rectangle", 0, 0, w/2, h/2);
   ship.maxSpeed = speed;
-  ship.friction = 0.02  ;
+  ship.friction = 0.015;
   ship.debug = true;
 }
 
 function createAsteroid(x, y) {
   let asteroid = createSprite(x, y);
-  asteroidSprite = random({asteroidImg, asteroidImg2});
-  asteroid.addImage(asteroidImg2);
+  asteroidSprite = random([asteroidImg, asteroidImg2]);
+  asteroid.addImage(asteroidSprite);
   asteroid.setCollider("circle", 0, 0, 25);
+  // asteroid.type = type;
+  // if (type === 2) {
+  //   asteroid.size = 0.6;
+  // }
+  // if (type === 1) {
+  //   asteroid.size = 0.3;
+  // }
   asteroid.mass = random(1, 2);
   asteroid.setSpeed(random(0.5, 2), random(360));
   asteroid.rotationSpeed = random(0.2, 1);
@@ -138,6 +154,39 @@ function createBullets() {
   bullet.setSpeed(ship.getSpeed()+6, ship.rotation);
   bullet.debug = true;
   bullets.add(bullet);
+}
+
+function bulletsHitAsteroid(asteroids, bullets) {
+  if (createBullets.life === 0) {
+    bullets.remove();
+  }
+
+  // let brokenType = asteroid.type-1;
+  // if (brokenType>0) {
+  //   createAsteroid(brokenType, asteroids.position.x, asteroids.position.y);
+  //   createAsteroid(brokenType, asteroids.position.x, asteroids.position.y);
+  // }
+
+  //particle effects
+  for (let i=0; i<10; i++) {
+    particle = createSprite(asteroids.position.x, asteroids.position.y);
+    particle.addImage(astParticleImg);
+    particle.setSpeed(random(2, 9), random(360));
+    particle.life = 10;
+    particle.friction = 0.05;
+    particle.scale = 0.25;
+    particles.add(particle);
+
+  }
+  bullets.remove();
+  asteroids.remove();
+  createAsteroid(random(width), random(height));
+}
+
+
+function createParticles(type) {
+  
+  
 }
 
 function shipControls() {
@@ -231,27 +280,3 @@ function displayFramerate() {
   text("FPS: " + Math.floor(frameRate()), width/2, 50);
 }
 
-function bulletsHitAsteroid(asteroids, bullets) {
-  if (createBullets.life === 0) {
-    bullets.remove();
-  }
-
-  for (let i=0; i<5; i++) {
-    particle = createSprite(asteroids.position.x, asteroids.position.y);
-    particle.addImage(astParticleImg);
-    particle.setSpeed(random(2, 7), random(360));
-    particle.life = 10;
-    particle.friction = 0.05;
-    particle.scale = 0.5;
-    particles.add(particle);
-    if (particle.life === 0) {
-      particles.remove();
-    }
-  }
-
-
-
-  bullets.remove();
-  asteroids.remove();
-  createAsteroid(random(width), random(height));
-}
