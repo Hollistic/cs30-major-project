@@ -11,11 +11,11 @@
 - shooting
 - implementation of virtual camera (follows the player)
 - collidable asteroids
-- some type of non asteroids enemy
 - sound effects
 
 ## Nice to Have List
 
 - main menu
 - points/upgrades system
-- new explorable areas, like "black holes" that take you to new areas
+- new explorable areas, like "black holes" that take you to new 
+- new enemies

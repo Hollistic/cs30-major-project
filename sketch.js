@@ -6,6 +6,14 @@
 // - used a new library called p5.play
 // - used a virtual camera to create an "open world" experience
 // - created my own pixel art for sprites
+// - implemented sound effects
+// - used class objects with the p5.play Group() feature along with the sprites function
+// - 
+//
+// To-Do:
+// - implement a points system
+// - add a shop/upgrade ui
+// - add another enemy?
 
 //screen values
 let sceneW;
@@ -18,13 +26,38 @@ let ship;
 
 //asteroids
 let asteroids;
+let shootSFX;
+let thrustSFX;
+let hitSFX;
 let explodeSFX;
 
 //let bullets
 let bullets;
-let shootSFX;
+
 
 let particles;
+
+function preload() {
+  //load ship
+  shipRestImg = loadImage("assets/playership.png");
+  shipThrustImg = loadImage("assets/playershipthrust.png");
+  shipThrustImg2 = loadImage("assets/playershipthrust2.png");
+  thrustSFX = loadSound("assets/thrust.wav");
+  shootSFX = loadSound("assets/shoot.wav");
+  hitSFX = loadSound("assets/hit.wav");
+
+  //load asteroid
+  asteroidImg = loadImage("assets/bigasteroid.png");
+  asteroidImg2 = loadImage("assets/bigasteroid2.png");
+  astParticleImg = loadImage("assets/asteroid_particles.png");
+  explodeSFX = loadSound("assets/explode.wav");
+
+  //load bullets
+  bulletsImg = loadImage("assets/bullet.png");
+
+  //music
+  musicLoop = loadSound("assets/wunna.mp3");
+}
 
 function setup() {
   //create window
@@ -35,35 +68,27 @@ function setup() {
   //   createCanvas(windowWidth*0.9, windowWidth*0.9);
   // }
 
-  createCanvas(1280*0.9, 800*0.9);
+  createCanvas(windowWidth, windowHeight);
 
   //defines the extended camera scene for the player ship
   sceneW = width + width*0.75;
   sceneH = height + height*0.75;
 
   //defines the small value outside the player ship's boundary area (width and heights)
-  marginW = width*0.4;
-  marginH = height*0.4;
+  marginW = width*0.25;
+  marginH = height*0.25;
 
-  //load ship
-  shipRestImg = loadImage("assets/playership.png");
-  shipThrustImg = loadImage("assets/playershipthrust.png");
-  shipThrustImg2 = loadImage("assets/playershipthrust2.png");
-  shootSFX = loadSound("assets/shoot.wav");
-  hitSFX = loadSound("assets/hit.wav");
+  
   createShip(width/2, height/2, 50, 50, 5, 100);
 
   //create bullets
-  bulletsImg = loadImage("assets/bullet.png");
+  
   bullets = new Group();
   
   //create asteroids group
-  asteroidImg = loadImage("assets/bigasteroid.png");
-  asteroidImg2 = loadImage("assets/bigasteroid2.png");
-  astParticleImg = loadImage("assets/asteroid_particles.png");
-  explodeSFX = loadSound("assets/explode.wav");
+  
   asteroids = new Group();
-  for (let i=0; i<20; i++) {
+  for (let i=0; i<30; i++) {
     createAsteroid(random(width), random(height), 3);
   } 
 
@@ -77,6 +102,7 @@ function setup() {
   bg = new Group();
   createBG();
   
+  // musicLoop.loop();
 }
 
 function draw() {
@@ -229,9 +255,12 @@ function shipControls() {
   if (keyDown("W")) {
     ship.changeAnimation("accelerating");
     ship.addSpeed(0.1, ship.rotation);
+    // thrustSFX.playMode("restart");
+    // thrustSFX.play();
   }
   else {
     ship.changeAnimation("resting");
+    thrustSFX.stop();
   }
   
   if (keyDown("A")) {
@@ -306,9 +335,11 @@ function checkOffScreen() {
 function displayUI() {
   camera.off();
   textAlign(CENTER);
+  // textFont("Press Start 2P");
   fill("limegreen");
   textSize(20);
   text("FPS: " + Math.floor(frameRate()), width-75, 50);
+  fill("red");
   text("HP: " + ship.health, width/2, 50);
 }
 
