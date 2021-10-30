@@ -68,6 +68,7 @@ function setup() {
   //   createCanvas(windowWidth*0.9, windowWidth*0.9);
   // }
 
+  // createCanvas(1280*0.9, 800*0.9);
   createCanvas(windowWidth, windowHeight);
 
   //defines the extended camera scene for the player ship
@@ -88,7 +89,7 @@ function setup() {
   //create asteroids group
   
   asteroids = new Group();
-  for (let i=0; i<30; i++) {
+  for (let i=0; i<25; i++) {
     createAsteroid(random(width), random(height), 3);
   } 
 
