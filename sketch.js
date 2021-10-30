@@ -76,8 +76,8 @@ function setup() {
   sceneH = height + height*0.75;
 
   //defines the small value outside the player ship's boundary area (width and heights)
-  marginW = width*0.25;
-  marginH = height*0.25;
+  marginW = width*0.4;
+  marginH = height*0.4;
 
   
   createShip(width/2, height/2, 50, 50, 5, 100);
@@ -89,7 +89,7 @@ function setup() {
   //create asteroids group
   
   asteroids = new Group();
-  for (let i=0; i<25; i++) {
+  for (let i=0; i<30; i++) {
     createAsteroid(random(width), random(height), 3);
   } 
 
