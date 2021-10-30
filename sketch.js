@@ -18,9 +18,11 @@ let ship;
 
 //asteroids
 let asteroids;
+let explodeSFX;
 
 //let bullets
 let bullets;
+let shootSFX;
 
 let particles;
 
@@ -47,7 +49,9 @@ function setup() {
   shipRestImg = loadImage("assets/playership.png");
   shipThrustImg = loadImage("assets/playershipthrust.png");
   shipThrustImg2 = loadImage("assets/playershipthrust2.png");
-  createShip(width/2, height/2, 50, 50, 5);
+  shootSFX = loadSound("assets/shoot.wav");
+  hitSFX = loadSound("assets/hit.wav");
+  createShip(width/2, height/2, 50, 50, 5, 100);
 
   //create bullets
   bulletsImg = loadImage("assets/bullet.png");
@@ -57,9 +61,10 @@ function setup() {
   asteroidImg = loadImage("assets/bigasteroid.png");
   asteroidImg2 = loadImage("assets/bigasteroid2.png");
   astParticleImg = loadImage("assets/asteroid_particles.png");
+  explodeSFX = loadSound("assets/explode.wav");
   asteroids = new Group();
   for (let i=0; i<20; i++) {
-    createAsteroid(random(width), random(height));
+    createAsteroid(random(width), random(height), 3);
   } 
 
   //oarticles
@@ -91,7 +96,7 @@ function draw() {
   
   //object collision
   asteroids.bounce(asteroids);
-  ship.bounce(asteroids);
+  ship.overlap(asteroids, shipHitAsteroid);
   bullets.overlap(asteroids, bulletsHitAsteroid);
 
   
@@ -99,7 +104,7 @@ function draw() {
   checkOffScreen();
 
   //displays framerate
-  displayFramerate();
+  displayUI();
   // createMiniMap();
 }
 
@@ -111,28 +116,31 @@ function createMiniMap() {
 }
 
 //creates a new ship
-function createShip(x, y, w, h, speed) {
+function createShip(x, y, w, h, speed, hp) {
   ship = createSprite(x, y, w, h);
   ship.addImage("resting", shipRestImg);
   ship.addAnimation("accelerating", shipThrustImg, shipThrustImg2);
   ship.setCollider("rectangle", 0, 0, w/2, h/2);
   ship.maxSpeed = speed;
+  ship.health = hp;
   ship.friction = 0.015;
   ship.debug = true;
 }
 
-function createAsteroid(x, y) {
+function createAsteroid(x, y, size) {
   let asteroid = createSprite(x, y);
   asteroidSprite = random([asteroidImg, asteroidImg2]);
   asteroid.addImage(asteroidSprite);
   asteroid.setCollider("circle", 0, 0, 25);
-  // asteroid.type = type;
-  // if (type === 2) {
-  //   asteroid.size = 0.6;
-  // }
-  // if (type === 1) {
-  //   asteroid.size = 0.3;
-  // }
+
+  asteroid.size = size;
+  if (size === 2) {
+    asteroid.scale = 0.75;
+  }
+  if (size === 1) {
+    asteroid.scale = 0.4;
+  }
+
   asteroid.mass = random(1, 2);
   asteroid.setSpeed(random(0.5, 2), random(360));
   asteroid.rotationSpeed = random(0.2, 1);
@@ -156,18 +164,21 @@ function createBullets() {
   bullets.add(bullet);
 }
 
-function bulletsHitAsteroid(asteroids, bullets) {
+function bulletsHitAsteroid(bullets, asteroids) {
   if (createBullets.life === 0) {
     bullets.remove();
   }
 
-  // let brokenType = asteroid.type-1;
-  // if (brokenType>0) {
-  //   createAsteroid(brokenType, asteroids.position.x, asteroids.position.y);
-  //   createAsteroid(brokenType, asteroids.position.x, asteroids.position.y);
-  // }
+  let brokenSize = asteroids.size-1;
+  if (brokenSize>0) {
+    createAsteroid(asteroids.position.x, asteroids.position.y, brokenSize);
+    createAsteroid(asteroids.position.x, asteroids.position.y, brokenSize);
+  }
 
-  //particle effects
+  //explode sound effect
+  explodeSFX.play();
+
+  //particle effect
   for (let i=0; i<10; i++) {
     particle = createSprite(asteroids.position.x, asteroids.position.y);
     particle.addImage(astParticleImg);
@@ -176,23 +187,43 @@ function bulletsHitAsteroid(asteroids, bullets) {
     particle.friction = 0.05;
     particle.scale = 0.25;
     particles.add(particle);
-
   }
+
   bullets.remove();
   asteroids.remove();
-  createAsteroid(random(width), random(height));
+  // createAsteroid(random(width), random(height));
 }
 
+function shipHitAsteroid(ship, asteroids) {
+  if (ship.health>0) {
+    ship.health -= 10;
+  }
+  ship.bounce(asteroids);
 
-function createParticles(type) {
-  
-  
+
+  //hit sound effect
+  hitSFX.play();
+
+  //particle effect
+  for (let i=0; i<10; i++) {
+    particle = createSprite(asteroids.position.x, asteroids.position.y);
+    particle.addImage(astParticleImg);
+    particle.setSpeed(random(2, 9), random(360));
+    particle.life = 10;
+    particle.friction = 0.05;
+    particle.scale = 0.25;
+    particles.add(particle);
+  }
+
+  asteroids.remove();
 }
+
 
 function shipControls() {
 
   if (keyWentDown("SPACE")) {
     createBullets();
+    shootSFX.play();
   }
 
   if (keyDown("W")) {
@@ -272,11 +303,12 @@ function checkOffScreen() {
   }
 }
 
-function displayFramerate() {
+function displayUI() {
   camera.off();
   textAlign(CENTER);
   fill("limegreen");
   textSize(20);
-  text("FPS: " + Math.floor(frameRate()), width/2, 50);
+  text("FPS: " + Math.floor(frameRate()), width-75, 50);
+  text("HP: " + ship.health, width/2, 50);
 }
 
