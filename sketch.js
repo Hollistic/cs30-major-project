@@ -21,6 +21,11 @@ let sceneH;
 let marginW;
 let marginH;
 
+//game values
+let score = 0;
+let money = 0;
+
+
 //ship values
 let ship;
 
@@ -30,10 +35,12 @@ let shootSFX;
 let thrustSFX;
 let hitSFX;
 let explodeSFX;
+let collectSFX;
 
 //let bullets
 let bullets;
 
+let coins;
 
 let particles;
 
@@ -45,6 +52,7 @@ function preload() {
   thrustSFX = loadSound("assets/thrust.wav");
   shootSFX = loadSound("assets/shoot.wav");
   hitSFX = loadSound("assets/hit.wav");
+  collectSFX = loadSound("assets/collect.wav");
 
   //load asteroid
   asteroidImg = loadImage("assets/bigasteroid.png");
@@ -54,6 +62,9 @@ function preload() {
 
   //load bullets
   bulletsImg = loadImage("assets/bullet.png");
+
+  //load coin
+  coinImg = loadImage("assets/coin.png");
 
   //music
   musicLoop = loadSound("assets/wunna.mp3");
@@ -93,8 +104,10 @@ function setup() {
     createAsteroid(random(width), random(height), 3);
   } 
 
-  //oarticles
+  //particles
   particles = new Group();
+
+  coins = new Group();
 
   //create background group
   starsImg = loadImage("assets/star.png");
@@ -117,15 +130,17 @@ function draw() {
   //all sprites are drawn, goes by layer order
   drawSprites(bg);
   drawSprites(asteroids);
+  drawSprites(coins);
   drawSprites(particles);
   drawSprites(bullets);
   drawSprite(ship);
   
   //object collision
   asteroids.bounce(asteroids);
+  asteroids.bounce(coins);
   ship.overlap(asteroids, shipHitAsteroid);
   bullets.overlap(asteroids, bulletsHitAsteroid);
-
+  ship.overlap(coins, shipTouchCoin);
   
   //checks if object is off screen
   checkOffScreen();
@@ -192,10 +207,7 @@ function createBullets() {
 }
 
 function bulletsHitAsteroid(bullets, asteroids) {
-  if (createBullets.life === 0) {
-    bullets.remove();
-  }
-
+  
   let brokenSize = asteroids.size-1;
   if (brokenSize>0) {
     createAsteroid(asteroids.position.x, asteroids.position.y, brokenSize);
@@ -216,10 +228,22 @@ function bulletsHitAsteroid(bullets, asteroids) {
     particles.add(particle);
   }
 
+  //drop a coin
+  coin = createSprite(asteroids.position.x, asteroids.position.y);
+  coin.addImage(coinImg);
+  coin.setSpeed(0, random(360));
+  coin.friction = 0.5;
+  coin.scale = 0.4;
+  coin.life = 1000;
+  coin.setCollider("circle", 0 , 0, 75);
+  coin.debug = true;
+  coins.add(coin);
+  
   bullets.remove();
   asteroids.remove();
   // createAsteroid(random(width), random(height));
 }
+
 
 function shipHitAsteroid(ship, asteroids) {
   if (ship.health>0) {
@@ -243,6 +267,15 @@ function shipHitAsteroid(ship, asteroids) {
   }
 
   asteroids.remove();
+}
+
+function shipTouchCoin(ship, coins) {
+  coins.attractionPoint(5, ship.position.x, ship.position.y);
+  if (coins.overlapPoint(ship.position.x, ship.position.y)) {
+    collectSFX.play();
+    money += 1;
+    coins.remove();
+  }
 }
 
 
@@ -337,10 +370,21 @@ function displayUI() {
   camera.off();
   textAlign(CENTER);
   // textFont("Press Start 2P");
-  fill("limegreen");
+  
+  //fps
   textSize(20);
-  text("FPS: " + Math.floor(frameRate()), width-75, 50);
+  fill("limegreen");
+  text("FPS: " + Math.floor(frameRate()), width*0.95, height*0.05);
+
+  //hp
+  textSize(30);
   fill("red");
-  text("HP: " + ship.health, width/2, 50);
+  text("HP: " + ship.health, width*0.5, height*0.95);
+  
+
+  //money
+  // image(coinImg, 50, 50, 50, 50);\
+  fill("yellow");
+  text("Money: " + "$" + money, width*0.05, height*0.05);
 }
 
