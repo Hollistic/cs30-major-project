@@ -65,6 +65,7 @@ function preload() {
 
   //load coin
   coinImg = loadImage("assets/coin.png");
+  coinPlusImg = loadImage("assets/plusone.png");
 
   //music
   musicLoop = loadSound("assets/wunna.mp3");
@@ -276,7 +277,14 @@ function shipTouchCoin(ship, coins) {
     money += 1;
     coins.remove();
   }
+  let plusOne = createSprite(ship.position.x, ship.position.y);
+  plusOne.addImage(coinPlusImg);
+  plusOne.setSpeed(3, 0);
+  plusOne.friction = 0.2;
+  plusOne.life = 20;
+  coins.add(plusOne);
 }
+
 
 
 function shipControls() {
@@ -386,5 +394,7 @@ function displayUI() {
   // image(coinImg, 50, 50, 50, 50);\
   fill("yellow");
   text("Money: " + "$" + money, width*0.05, height*0.05);
+
+  //score
 }
 
