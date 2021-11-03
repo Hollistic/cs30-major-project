@@ -84,8 +84,8 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
 
   //defines the extended camera scene for the player ship
-  sceneW = width + width*0.75;
-  sceneH = height + height*0.75;
+  sceneW = width + width*0.9;
+  sceneH = height + height*0.9;
 
   //defines the small value outside the player ship's boundary area (width and heights)
   marginW = width*0.4;
@@ -277,12 +277,13 @@ function shipTouchCoin(ship, coins) {
     money += 1;
     coins.remove();
   }
-  let plusOne = createSprite(ship.position.x, ship.position.y);
+  let plusOne = createSprite(ship.position.x, ship.position.y-40);
   plusOne.addImage(coinPlusImg);
   plusOne.setSpeed(3, 0);
   plusOne.friction = 0.2;
-  plusOne.life = 20;
-  coins.add(plusOne);
+  plusOne.life = 50;
+  drawSprite(plusOne);
+  // coins.add(plusOne);
 }
 
 
