@@ -4,7 +4,7 @@
 //
 // Extra for Experts:
 // - used a new library called p5.play
-// - used a virtual camera to create an "open world" experience
+// - used a virtual camera to create an "open" experience
 // - created my own pixel art for sprites
 // - implemented sound effects
 // - used class objects with the p5.play Group() feature along with the sprites function
@@ -43,6 +43,7 @@ let bullets;
 let coins;
 
 let particles;
+
 
 function preload() {
   //load ship
@@ -84,8 +85,8 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
 
   //defines the extended camera scene for the player ship
-  sceneW = width + width*0.9;
-  sceneH = height + height*0.9;
+  sceneW = width + width*0.4;
+  sceneH = height + height*0.4;
 
   //defines the small value outside the player ship's boundary area (width and heights)
   marginW = width*0.4;
@@ -298,8 +299,10 @@ function shipControls() {
   if (keyDown("W")) {
     ship.changeAnimation("accelerating");
     ship.addSpeed(0.1, ship.rotation);
-    // thrustSFX.playMode("restart");
-    // thrustSFX.play();
+    thrustSFX.playMode("restart");
+    if (!thrustSFX.isPlaying()) {
+      thrustSFX.play();
+    }
   }
   else {
     ship.changeAnimation("resting");
@@ -318,19 +321,19 @@ function shipControls() {
 function createBG() {
   //create background elements
   for (let i=0; i<50; i++) {
-    let stars = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
+    let stars = createSprite(random(0-marginW, sceneW+marginW), random(0-marginH, sceneH+marginH));
     stars.addImage("stars", starsImg);
     stars.scale = random(0.75, 1.25);
     bg.add(stars);
   }
   for (let i=0; i<200; i++) {
-    let smallStars = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
+    let smallStars = createSprite(random(0-marginW, sceneW+marginW), random(0-marginH, sceneH+marginH));
     smallStars.addImage("small-stars", smallStarsImg);
     bg.add(smallStars);
   }
 
   for (let i=0; i<10; i++) {
-    let galaxies = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
+    let galaxies = createSprite(random(0-marginW, sceneW+marginW), random(0-marginH, sceneH+marginH));
     galaxies.addImage("galaxies", galaxyImg);
     galaxies.scale = random(1.0, 1.5);
     bg.add(galaxies);
@@ -348,14 +351,14 @@ function controlCamera() {
   if (ship.position.y < 0) {
     ship.position.y = 0;
   }
-  if (ship.position.y > height) {
-    ship.position.y = height;
+  if (ship.position.y > sceneH) {
+    ship.position.y = sceneH;
   }
   if (ship.position.x < 0) {
     ship.position.x = 0;
   }
-  if (ship.position.x > width) {
-    ship.position.x = width;
+  if (ship.position.x > sceneW) {
+    ship.position.x = sceneW;
   }
 }
 
@@ -363,15 +366,15 @@ function checkOffScreen() {
   for (let i=0; i<asteroids.length; i++) {
     let s = asteroids[i];
     if (s.position.x < 0-marginW) {
-      s.position.x = width+marginW;
+      s.position.x = sceneW+marginW;
     }
-    if(s.position.x > width+marginW) {
+    if(s.position.x > sceneW+marginW) {
       s.position.x = 0-marginW;
     }
     if (s.position.y < 0-marginH) {
-      s.position.y = height+marginH;
+      s.position.y = sceneH+marginH;
     }
-    if (s.position.y > height+marginH) {
+    if (s.position.y > sceneH+marginH) {
       s.position.y = 0-marginH;
     }
   }
@@ -391,6 +394,13 @@ function displayUI() {
   textSize(30);
   fill("red");
   text("HP: " + ship.health, width*0.5, height*0.95);
+
+  rect(width*0.5 - width*0.2, height*0.95, width*0.2*2, height*0.025);
+  // if (ship.overlap(asteroids)) {
+  //   widthHp -= width*0.4/10;
+  // }
+  fill("green");
+  rect(width*0.5 - width*0.2, height*0.95, width*0.2*2, height*0.025);
   
 
   //money
@@ -399,5 +409,8 @@ function displayUI() {
   text("Money: " + "$" + money, width*0.05, height*0.05);
 
   //score
+  fill("white");
+  textSize(60);
+  text("Score: " + score, width*0.5, height*0.1);
 }
 
