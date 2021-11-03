@@ -320,9 +320,10 @@ function createBG() {
   for (let i=0; i<50; i++) {
     let stars = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
     stars.addImage("stars", starsImg);
+    stars.scale = random(0.75, 1.25);
     bg.add(stars);
   }
-  for (let i=0; i<150; i++) {
+  for (let i=0; i<200; i++) {
     let smallStars = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
     smallStars.addImage("small-stars", smallStarsImg);
     bg.add(smallStars);
@@ -331,6 +332,7 @@ function createBG() {
   for (let i=0; i<10; i++) {
     let galaxies = createSprite(random(0-marginW, width+marginW), random(0-marginH, height+marginH));
     galaxies.addImage("galaxies", galaxyImg);
+    galaxies.scale = random(1.0, 1.5);
     bg.add(galaxies);
   }
 }
