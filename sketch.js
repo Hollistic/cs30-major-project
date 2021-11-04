@@ -494,6 +494,7 @@ function displayUI() {
   fill("red");
   text("HP: " + ship.health, width*0.5, height*0.925);
   //HP Bar
+  noStroke();
   rect(width*0.5 - width*0.2, height*0.95, width*0.4, height*0.025);
   fill("green");
   rect(width*0.5 - width*0.2, height*0.95, hpBarWidth, height*0.025);
