@@ -11,9 +11,8 @@
 // - 
 //
 // To-Do:
-// - implement a points system
-// - add a shop/upgrade ui
-// - add another enemy?
+// -replayable element
+// -main menu
 
 //screen values
 let sceneW;
@@ -21,29 +20,29 @@ let sceneH;
 let marginW;
 let marginH;
 
-//game values
+//game 
+let gameStart = false;
+let gameOver = false;
+let debugMode = false;
 let score = 0;
 let money = 0;
 
+//game timer
+let timer = 1000;
+let addPoints = timer;
+let spawnMoreAsteroids = timer*30;
+let asteroidAmount = 10;
 
-//ship values
+//game objects
 let ship;
-
-//asteroids
 let asteroids;
-let shootSFX;
-let thrustSFX;
-let hitSFX;
-let explodeSFX;
-let collectSFX;
-
-//let bullets
 let bullets;
-
 let coins;
-
 let particles;
 
+
+
+//------------------------------------------------------------------------//
 
 function preload() {
   //load ship
@@ -68,8 +67,14 @@ function preload() {
   coinImg = loadImage("assets/coin.png");
   coinPlusImg = loadImage("assets/plusone.png");
 
+  //load background
+  starsImg = loadImage("assets/star.png");
+  smallStarsImg = loadImage("assets/smallstar.png");
+  galaxyImg = loadImage("assets/galaxy.png");
+
   //music
-  musicLoop = loadSound("assets/wunna.mp3");
+  musicLoopSecret = loadSound("assets/wunna.mp3");
+  gameOverMusic = loadSound("assets/gameOver.mp3");
 }
 
 function setup() {
@@ -84,23 +89,21 @@ function setup() {
   // createCanvas(1280*0.9, 800*0.9);
   createCanvas(windowWidth, windowHeight);
 
-  //defines the extended camera scene for the player ship
-  sceneW = width + width*0.4;
-  sceneH = height + height*0.4;
+  //defines the extended camera scene for the player ship, you can extend these values for a bigger play area
+  sceneW = width + width*0.2;
+  sceneH = height + height*0.2;
 
   //defines the small value outside the player ship's boundary area (width and heights)
   marginW = width*0.4;
   marginH = height*0.4;
 
-  
-  createShip(width/2, height/2, 50, 50, 5, 100);
+  //creates player ship
+  createShip(width/2, height/2, 50, 50, 5, 50);
 
   //create bullets
-  
   bullets = new Group();
   
-  //create asteroids group
-  
+  //create asteroids group, spawn 30 asteroids at start of game
   asteroids = new Group();
   for (let i=0; i<30; i++) {
     createAsteroid(random(width), random(height), 3);
@@ -112,44 +115,53 @@ function setup() {
   coins = new Group();
 
   //create background group
-  starsImg = loadImage("assets/star.png");
-  smallStarsImg = loadImage("assets/smallstar.png");
-  galaxyImg = loadImage("assets/galaxy.png");
+  
   bg = new Group();
   createBG();
   
-  // musicLoop.loop();
+  musicLoopSecret.loop();
 }
 
 function draw() {
-  clear();
+  // clear();
   background(0);
 
-  controlCamera();
+  if (gameOver === true) {
+    drawSprites(bg);
+    gameOverScreen();
+  }
+  else {
+    
+    controlCamera();
 
-  shipControls();
-  
-  //all sprites are drawn, goes by layer order
-  drawSprites(bg);
-  drawSprites(asteroids);
-  drawSprites(coins);
-  drawSprites(particles);
-  drawSprites(bullets);
-  drawSprite(ship);
-  
-  //object collision
-  asteroids.bounce(asteroids);
-  asteroids.bounce(coins);
-  ship.overlap(asteroids, shipHitAsteroid);
-  bullets.overlap(asteroids, bulletsHitAsteroid);
-  ship.overlap(coins, shipTouchCoin);
-  
-  //checks if object is off screen
-  checkOffScreen();
+    shipControls();
+    
+    //all sprites are drawn, goes by layer order
+    drawSprites(bg);
+    drawSprites(asteroids);
+    drawSprites(coins);
+    drawSprites(particles);
+    drawSprites(bullets);
+    drawSprite(ship);
+    
+    //checks for collision
+    checkCollision();
 
-  //displays framerate
-  displayUI();
-  // createMiniMap();
+    //checks if object is off screen
+    checkOffScreen();
+
+    //game timer
+    gameTimer();
+
+    //displays ui elements
+    displayUI();
+
+    //check for game over
+    if (ship.health <= 0) {
+      gameOver = true;
+    } 
+    
+  } 
 }
 
 function createMiniMap() {
@@ -168,15 +180,17 @@ function createShip(x, y, w, h, speed, hp) {
   ship.maxSpeed = speed;
   ship.health = hp;
   ship.friction = 0.015;
-  ship.debug = true;
+  ship.debug = debugMode;
 }
 
 function createAsteroid(x, y, size) {
+  //create an asteroid and defining values
   let asteroid = createSprite(x, y);
   asteroidSprite = random([asteroidImg, asteroidImg2]);
   asteroid.addImage(asteroidSprite);
   asteroid.setCollider("circle", 0, 0, 25);
 
+  //asteroid sizes when splitting
   asteroid.size = size;
   if (size === 2) {
     asteroid.scale = 0.75;
@@ -184,32 +198,42 @@ function createAsteroid(x, y, size) {
   if (size === 1) {
     asteroid.scale = 0.4;
   }
-
+  //defining values
   asteroid.mass = random(1, 2);
-  asteroid.setSpeed(random(0.5, 2), random(360));
+  asteroid.setSpeed(random(1, 4), random(360));
   asteroid.rotationSpeed = random(0.2, 1);
   asteroid.useQuadTree = true;
-  asteroid.debug = true;
+  asteroid.debug = debugMode;
   
-  //size detection  
-
   //push to group
   asteroids.add(asteroid);
   return asteroid;
 }
 
 function createBullets() {
+  //create a bullet sprite and assign values
   let bullet = createSprite(ship.position.x, ship.position.y);
   bullet.addImage(bulletsImg);
   bullet.life = 50;
   bullet.rotateToDirection = true;
   bullet.setSpeed(ship.getSpeed()+6, ship.rotation);
-  bullet.debug = true;
+  bullet.debug = debugMode;
   bullets.add(bullet);
+}
+
+function checkCollision() {
+  //object collision
+  asteroids.bounce(asteroids);
+  asteroids.bounce(coins);
+  ship.overlap(asteroids, shipHitAsteroid);
+  bullets.overlap(asteroids, bulletsHitAsteroid);
+  ship.overlap(coins, shipTouchCoin);
+  
 }
 
 function bulletsHitAsteroid(bullets, asteroids) {
   
+  //spawns broken asteroids
   let brokenSize = asteroids.size-1;
   if (brokenSize>0) {
     createAsteroid(asteroids.position.x, asteroids.position.y, brokenSize);
@@ -217,7 +241,10 @@ function bulletsHitAsteroid(bullets, asteroids) {
   }
 
   //explode sound effect
-  explodeSFX.play();
+  explodeSFX.playMode("restart");
+  if (!explodeSFX.isPlaying()) {
+    explodeSFX.play();
+  }
 
   //particle effect
   for (let i=0; i<10; i++) {
@@ -235,27 +262,43 @@ function bulletsHitAsteroid(bullets, asteroids) {
   coin.addImage(coinImg);
   coin.setSpeed(0, random(360));
   coin.friction = 0.5;
-  coin.scale = 0.4;
+  coin.scale = 0.8;
   coin.life = 1000;
   coin.setCollider("circle", 0 , 0, 75);
-  coin.debug = true;
+  coin.debug = debugMode;
   coins.add(coin);
+
+  //add points to score
+  if (asteroids.size === 3) {
+    score += 100;
+  }
+  else if (asteroids.size === 2) {
+    score += 50;
+  }
+  else if (asteroids.size === 1) {
+    score += 25;
+  }
   
   bullets.remove();
   asteroids.remove();
-  // createAsteroid(random(width), random(height));
 }
 
 
 function shipHitAsteroid(ship, asteroids) {
-  if (ship.health>0) {
+  
+  if (ship.health > 0) {
     ship.health -= 10;
   }
+  
   ship.bounce(asteroids);
 
 
   //hit sound effect
-  hitSFX.play();
+  hitSFX.playMode("restart");
+  if (!hitSFX.isPlaying()) {
+    hitSFX.play();
+  }
+  
 
   //particle effect
   for (let i=0; i<10; i++) {
@@ -274,9 +317,13 @@ function shipHitAsteroid(ship, asteroids) {
 function shipTouchCoin(ship, coins) {
   coins.attractionPoint(5, ship.position.x, ship.position.y);
   if (coins.overlapPoint(ship.position.x, ship.position.y)) {
-    collectSFX.play();
+    collectSFX.playMode("restart");
+    if (!collectSFX.isPlaying()) {
+      collectSFX.play();
+    }
     money += 1;
     coins.remove();
+    score += 20;
   }
   let plusOne = createSprite(ship.position.x, ship.position.y-40);
   plusOne.addImage(coinPlusImg);
@@ -284,19 +331,35 @@ function shipTouchCoin(ship, coins) {
   plusOne.friction = 0.2;
   plusOne.life = 50;
   drawSprite(plusOne);
-  // coins.add(plusOne);
+
 }
 
 
 
 function shipControls() {
-
+  //debug
+  if (keyWentDown("P")) {
+    if (!debugMode){
+      debugMode = true;
+    }
+    else if (debugMode){
+      debugMode = false;
+    }
+    for (let i=0; i<allSprites.length; i++) {
+      allSprites[i].debug = debugMode;
+    }
+  }
+  
+  //shooting controls
   if (keyWentDown("SPACE")) {
     createBullets();
-    shootSFX.play();
+    shootSFX.playMode("restart");
+    if (!shootSFX.isPlaying()) {
+      shootSFX.play();
+    }
   }
 
-  if (keyDown("W")) {
+  if (keyDown("W")) { //thrust
     ship.changeAnimation("accelerating");
     ship.addSpeed(0.1, ship.rotation);
     thrustSFX.playMode("restart");
@@ -309,11 +372,11 @@ function shipControls() {
     thrustSFX.stop();
   }
   
-  if (keyDown("A")) {
+  if (keyDown("A")) { //turn left
     ship.rotation -= 2;
   }
 
-  if (keyDown("D")) {
+  if (keyDown("D")) { //turn right
     ship.rotation += 2;
   }
 }
@@ -380,6 +443,26 @@ function checkOffScreen() {
   }
 }
 
+
+function gameTimer() {
+  //adds 1 point every second
+  if (millis() > addPoints) {
+    addPoints = millis() + timer;
+    console.log("time elapsed: " + Math.floor(millis() / 1000));
+    score += 1;
+  }
+
+  //spawn more asteroids
+  if (millis() > spawnMoreAsteroids) {
+    for (let i=0; i<asteroidAmount; i++) {
+      createAsteroid(random(0, width), random(30-marginH, -20));
+    } 
+    asteroidAmount += 1;
+    spawnMoreAsteroids = millis() + timer*30;
+  }
+}
+
+
 function displayUI() {
   camera.off();
   textAlign(CENTER);
@@ -393,12 +476,10 @@ function displayUI() {
   //hp
   textSize(30);
   fill("red");
-  text("HP: " + ship.health, width*0.5, height*0.95);
+  text("HP: " + ship.health, width*0.5, height*0.925);
 
   rect(width*0.5 - width*0.2, height*0.95, width*0.2*2, height*0.025);
-  // if (ship.overlap(asteroids)) {
-  //   widthHp -= width*0.4/10;
-  // }
+ 
   fill("green");
   rect(width*0.5 - width*0.2, height*0.95, width*0.2*2, height*0.025);
   
@@ -414,3 +495,24 @@ function displayUI() {
   text("Score: " + score, width*0.5, height*0.1);
 }
 
+function gameOverScreen() {
+  camera.off();
+  
+  musicLoopSecret.stop();
+  
+  if (!gameOverMusic.isPlaying()) {
+    gameOverMusic.loop();
+  }
+  textSize(70);
+  fill("red");
+  text("GAME OVER", width/2, height*0.4);
+  fill("white");
+  text("SCORE: " + score, width/2, height*0.5);
+  fill("limegreen");
+  text("Try again?", width/2, height*0.9);
+
+  imageMode(CENTER);
+  image(shipThrustImg, width*0.25, height/2, 200, 200);
+  image(asteroidImg, width*0.75, height/2, 200, 200);
+
+}

@@ -17,5 +17,5 @@
 
 - main menu
 - points/upgrades system
-- new explorable areas, like "black holes" that take you to new 
+- new explorable areas, like "black holes" that take you to new places
 - new enemies
