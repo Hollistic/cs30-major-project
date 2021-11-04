@@ -26,6 +26,8 @@ let gameOver = false;
 let debugMode = false;
 let score = 0;
 let money = 0;
+let shipHP = 3;
+let hpBarWidth;
 
 //game timer
 let timer = 1000;
@@ -48,9 +50,9 @@ function preload() {
   soundFormats("mp3", "wav");
 
   //load ship
-  shipRestImg = loadImage("assets/images/playership.png");
-  shipThrustImg = loadImage("assets/images/playershipthrust.png");
-  shipThrustImg2 = loadImage("assets/images/playershipthrust2.png");
+  shipRestImg = loadImage("assets/images/player_ship.png");
+  shipThrustImg = loadImage("assets/images/player_ship_thrust.png");
+  shipThrustImg2 = loadImage("assets/images/player_ship_thrust_2.png");
   thrustSFX = loadSound("assets/audio/thrust.wav");
   shootSFX = loadSound("assets/audio/shoot.wav");
   hitSFX = loadSound("assets/audio/hit.wav");
@@ -67,11 +69,11 @@ function preload() {
 
   //load coin
   coinImg = loadImage("assets/images/coin.png");
-  coinPlusImg = loadImage("assets/images/plusone.png");
+  coinPlusImg = loadImage("assets/images/plus_one.png");
 
   //load background
   starsImg = loadImage("assets/images/star.png");
-  smallStarsImg = loadImage("assets/images/smallstar.png");
+  smallStarsImg = loadImage("assets/images/small_star.png");
   galaxyImg = loadImage("assets/images/galaxy.png");
 
   //music
@@ -100,8 +102,11 @@ function setup() {
   marginW = width*0.4;
   marginH = height*0.4;
 
+  //SHIP HEALTH
+  hpBarWidth = width*0.4;
+
   //creates player ship
-  createShip(width/2, height/2, 50, 50, 5, 50);
+  createShip(width/2, height/2, 50, 50, 5, shipHP);
 
   //create bullets
   bullets = new Group();
@@ -115,15 +120,14 @@ function setup() {
   //particles
   particles = new Group();
 
+  //coins
   coins = new Group();
 
   //create background group
-  
   bg = new Group();
   createBG();
   
   //testing new method of playing music
-  
   musicLoop.volume(0.5);
   musicLoop.loop();
 }
@@ -171,7 +175,6 @@ function draw() {
 }
 
 function createMiniMap() {
-  
   let miniMapW = 200;
   let miniMapH = 200;
   copy(0, 0, width, height, width-miniMapW, height - miniMapH, miniMapW, miniMapH);
@@ -293,8 +296,10 @@ function bulletsHitAsteroid(bullets, asteroids) {
 function shipHitAsteroid(ship, asteroids) {
   
   if (ship.health > 0) {
-    ship.health -= 10;
+    ship.health -= 1;
   }
+
+  hpBarWidth -= width*0.4/shipHP;
   
   ship.bounce(asteroids);
 
@@ -479,22 +484,20 @@ function displayUI() {
   fill("limegreen");
   text("FPS: " + Math.floor(frameRate()), width*0.95, height*0.05);
 
-  //hp
-  textSize(30);
-  fill("red");
-  text("HP: " + ship.health, width*0.5, height*0.925);
-
-  rect(width*0.5 - width*0.2, height*0.95, width*0.2*2, height*0.025);
- 
-  fill("green");
-  rect(width*0.5 - width*0.2, height*0.95, width*0.2*2, height*0.025);
-  
-
   //money
   // image(coinImg, 50, 50, 50, 50);\
   fill("yellow");
   text("Money: " + "$" + money, width*0.05, height*0.05);
 
+  //Ship HP
+  textSize(30);
+  fill("red");
+  text("HP: " + ship.health, width*0.5, height*0.925);
+  //HP Bar
+  rect(width*0.5 - width*0.2, height*0.95, width*0.4, height*0.025);
+  fill("green");
+  rect(width*0.5 - width*0.2, height*0.95, hpBarWidth, height*0.025);
+  
   //score
   fill("white");
   textSize(60);
@@ -515,10 +518,15 @@ function gameOverScreen() {
   fill("white");
   text("SCORE: " + score, width/2, height*0.5);
   fill("limegreen");
-  text("Try again?", width/2, height*0.9);
+  text("Try again? Press R!", width/2, height*0.9);
 
   imageMode(CENTER);
   image(shipThrustImg, width*0.25, height/2, 200, 200);
   image(asteroidImg, width*0.75, height/2, 200, 200);
+
+  if (keyWentDown("R")) {
+    setup();
+    gameOver = false;
+  }
 
 }
