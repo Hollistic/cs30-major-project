@@ -57,8 +57,8 @@ function preload() {
   collectSFX = loadSound("assets/audio/collect.wav");
 
   //load asteroid
-  asteroidImg = loadImage("assets/images/bigasteroid.png");
-  asteroidImg2 = loadImage("assets/images/bigasteroid2.png");
+  asteroidImg = loadImage("assets/images/asteroid_grey.png");
+  asteroidImg2 = loadImage("assets/images/asteroid_blue.png");
   astParticleImg = loadImage("assets/images/asteroid_particles.png");
   explodeSFX = loadSound("assets/audio/explode.wav");
 
@@ -189,7 +189,7 @@ function createShip(x, y, w, h, speed, hp) {
   ship.debug = debugMode;
 }
 
-function createAsteroid(x, y, size) {
+function createAsteroid(x, y, size, speed) {
   //create an asteroid and defining values
   let asteroid = createSprite(x, y);
   asteroidSprite = random([asteroidImg, asteroidImg2]);
@@ -206,7 +206,7 @@ function createAsteroid(x, y, size) {
   }
   //defining values
   asteroid.mass = random(1, 2);
-  asteroid.setSpeed(random(1, 4), random(360));
+  asteroid.setSpeed(random(2, 5), random(360));
   asteroid.rotationSpeed = random(0.2, 1);
   asteroid.useQuadTree = true;
   asteroid.debug = debugMode;
