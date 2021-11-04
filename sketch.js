@@ -46,35 +46,35 @@ let particles;
 
 function preload() {
   //load ship
-  shipRestImg = loadImage("assets/playership.png");
-  shipThrustImg = loadImage("assets/playershipthrust.png");
-  shipThrustImg2 = loadImage("assets/playershipthrust2.png");
-  thrustSFX = loadSound("assets/thrust.wav");
-  shootSFX = loadSound("assets/shoot.wav");
-  hitSFX = loadSound("assets/hit.wav");
-  collectSFX = loadSound("assets/collect.wav");
+  shipRestImg = loadImage("assets/images/playership.png");
+  shipThrustImg = loadImage("assets/images/playershipthrust.png");
+  shipThrustImg2 = loadImage("assets/images/playershipthrust2.png");
+  thrustSFX = loadSound("assets/audio/thrust.wav");
+  shootSFX = loadSound("assets/audio/shoot.wav");
+  hitSFX = loadSound("assets/audio/hit.wav");
+  collectSFX = loadSound("assets/audio/collect.wav");
 
   //load asteroid
-  asteroidImg = loadImage("assets/bigasteroid.png");
-  asteroidImg2 = loadImage("assets/bigasteroid2.png");
-  astParticleImg = loadImage("assets/asteroid_particles.png");
-  explodeSFX = loadSound("assets/explode.wav");
+  asteroidImg = loadImage("assets/images/bigasteroid.png");
+  asteroidImg2 = loadImage("assets/images/bigasteroid2.png");
+  astParticleImg = loadImage("assets/images/asteroid_particles.png");
+  explodeSFX = loadSound("assets/audio/explode.wav");
 
   //load bullets
-  bulletsImg = loadImage("assets/bullet.png");
+  bulletsImg = loadImage("assets/images/bullet.png");
 
   //load coin
-  coinImg = loadImage("assets/coin.png");
-  coinPlusImg = loadImage("assets/plusone.png");
+  coinImg = loadImage("assets/images/coin.png");
+  coinPlusImg = loadImage("assets/images/plusone.png");
 
   //load background
-  starsImg = loadImage("assets/star.png");
-  smallStarsImg = loadImage("assets/smallstar.png");
-  galaxyImg = loadImage("assets/galaxy.png");
+  starsImg = loadImage("assets/images/star.png");
+  smallStarsImg = loadImage("assets/images/smallstar.png");
+  galaxyImg = loadImage("assets/images/galaxy.png");
 
   //music
-  musicLoopSecret = loadSound("assets/wunna.mp3");
-  gameOverMusic = loadSound("assets/gameOver.mp3");
+  musicLoopSecret = loadSound("assets/audio/wunna.mp3");
+  gameOverMusic = loadSound("assets/audio/gameOver.mp3");
 }
 
 function setup() {
@@ -241,7 +241,7 @@ function bulletsHitAsteroid(bullets, asteroids) {
   }
 
   //explode sound effect
-  explodeSFX.playMode("restart");
+  explodeSFX.playMode("sustain");
   if (!explodeSFX.isPlaying()) {
     explodeSFX.play();
   }
@@ -294,7 +294,7 @@ function shipHitAsteroid(ship, asteroids) {
 
 
   //hit sound effect
-  hitSFX.playMode("restart");
+  hitSFX.playMode("sustain");
   if (!hitSFX.isPlaying()) {
     hitSFX.play();
   }
@@ -317,7 +317,7 @@ function shipHitAsteroid(ship, asteroids) {
 function shipTouchCoin(ship, coins) {
   coins.attractionPoint(5, ship.position.x, ship.position.y);
   if (coins.overlapPoint(ship.position.x, ship.position.y)) {
-    collectSFX.playMode("restart");
+    collectSFX.playMode("sustain");
     if (!collectSFX.isPlaying()) {
       collectSFX.play();
     }
@@ -353,7 +353,7 @@ function shipControls() {
   //shooting controls
   if (keyWentDown("SPACE")) {
     createBullets();
-    shootSFX.playMode("restart");
+    shootSFX.playMode("sustain");
     if (!shootSFX.isPlaying()) {
       shootSFX.play();
     }
@@ -499,7 +499,7 @@ function gameOverScreen() {
   camera.off();
   
   musicLoopSecret.stop();
-  
+
   if (!gameOverMusic.isPlaying()) {
     gameOverMusic.loop();
   }
