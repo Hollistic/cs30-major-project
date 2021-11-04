@@ -125,7 +125,7 @@ function setup() {
   
   //testing new method of playing music
   musicLoop = createAudio("assets/audio/madlibs_assignment_reference.mp3");
-  musicLoop.volume(0.4);
+  musicLoop.volume(0.5);
   musicLoop.loop();
 }
 
