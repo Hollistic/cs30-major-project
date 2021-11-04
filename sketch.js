@@ -40,8 +40,6 @@ let bullets;
 let coins;
 let particles;
 
-//music
-let musicLoopMaybe;
 
 
 //------------------------------------------------------------------------//
@@ -77,6 +75,7 @@ function preload() {
   galaxyImg = loadImage("assets/images/galaxy.png");
 
   //music
+  musicLoop = createAudio("assets/audio/madlibs_assignment_reference.mp3");
   musicLoopSecret = loadSound("assets/audio/wunna.mp3");
   gameOverMusic = loadSound("assets/audio/gameOver.mp3");
 }
@@ -124,7 +123,7 @@ function setup() {
   createBG();
   
   //testing new method of playing music
-  musicLoop = createAudio("assets/audio/madlibs_assignment_reference.mp3");
+  
   musicLoop.volume(0.5);
   musicLoop.loop();
 }
