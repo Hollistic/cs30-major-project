@@ -45,6 +45,8 @@ let particles;
 //------------------------------------------------------------------------//
 
 function preload() {
+  soundFormats("mp3", "wav");
+
   //load ship
   shipRestImg = loadImage("assets/images/playership.png");
   shipThrustImg = loadImage("assets/images/playershipthrust.png");
@@ -119,7 +121,7 @@ function setup() {
   bg = new Group();
   createBG();
   
-  musicLoopSecret.loop();
+  // musicLoopSecret.loop();
 }
 
 function draw() {
