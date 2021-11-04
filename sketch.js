@@ -40,6 +40,8 @@ let bullets;
 let coins;
 let particles;
 
+//music
+let musicLoopMaybe;
 
 
 //------------------------------------------------------------------------//
@@ -121,7 +123,10 @@ function setup() {
   bg = new Group();
   createBG();
   
-  // musicLoopSecret.loop();
+  //testing new method of playing music
+  musicLoop = createAudio("assets/audio/madlibs_assignment_reference.mp3");
+  musicLoop.volume(0.4);
+  musicLoop.loop();
 }
 
 function draw() {
@@ -500,7 +505,7 @@ function displayUI() {
 function gameOverScreen() {
   camera.off();
   
-  musicLoopSecret.stop();
+  musicLoop.stop();
 
   if (!gameOverMusic.isPlaying()) {
     gameOverMusic.loop();
