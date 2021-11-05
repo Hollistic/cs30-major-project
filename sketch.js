@@ -15,7 +15,8 @@
 // - debug mode can be accessed by pressing P
 //
 // Instructions:
-// - Try to avoid the asteroids by shooting and get the highest score possible! Asteroids respawn every 60 seconds, boss asteroids spawn every 30 seconds (they take 10 hits to explode) 
+// - Try to avoid the asteroids by shooting and get the highest score possible! 
+// - Asteroids respawn every 60 seconds, boss asteroids spawn every 30 seconds (they take 10 hits to explode), all of these spawn at the top 
 // - Press W to thrust your ship and press A/D to rotate
 // - Press Spacebar to shoot
 // - You can upgrade your bullets by pressing the number 1 key, they will shoot further (cost 20 coins)
@@ -169,9 +170,9 @@ function draw() {
     
     //all sprites are drawn, goes by layer order
     drawSprites(bg);
+    drawSprites(coins);
     drawSprites(asteroids);
     drawSprites(bossAsteroids);
-    drawSprites(coins);
     drawSprites(particles);
     drawSprites(playerBullets);
     drawSprite(ship);
@@ -272,12 +273,10 @@ function createBullets(type) {
 }
 
 function checkCollision() {
-  //object collision
+  //checking for object collision, bouncing and overlaps which use a callback function
   asteroids.bounce(asteroids);
-  asteroids.bounce(coins);
   bossAsteroids.bounce(bossAsteroids);
   bossAsteroids.bounce(asteroids);
-  bossAsteroids.bounce(coins);
   ship.overlap(asteroids, shipHitAsteroid);
   ship.overlap(bossAsteroids, shipHitBossAsteroid);
   playerBullets.overlap(asteroids, bulletsHitAsteroid);
@@ -331,19 +330,22 @@ function bulletsHitAsteroid(bullets, asteroids) {
     score += 25;
   }
   
+  //remove bullets and asteroids
   bullets.remove();
   asteroids.remove();
 }
 
 function bulletsHitBossAsteroid(bullets, bossAsteroids) {
+  //the boss asteroid loses health when shot at
   if (bossAsteroids.health > 0) {
     bossAsteroids.health -=1;
   }
+  //if health dropes to 0 or below the following runs
   if (bossAsteroids.health <= 0) {
     explodeSFX.play();
     score += 300;
     bossAsteroids.remove();
-    //drop 5 coin
+    //drops 5 coins
     for (let i=0; i<5; i++) {
       coin = createSprite(bossAsteroids.position.x+random(-10, 10), bossAsteroids.position.y+random(-10, 10));
       coin.addImage(coinImg);
@@ -604,7 +606,7 @@ function gameOverScreen() {
     gameOverMusic.loop();
   }
   
-  //create game over screen
+  //create the game over screen
   textSize(70);
   fill("red");
   text("GAME OVER", width/2, height*0.4);
