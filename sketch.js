@@ -532,6 +532,21 @@ function checkOffScreen() {
       s.position.y = 0-marginH;
     }
   }
+  for (let i=0; i<bossAsteroids.length; i++) {
+    let s = bossAsteroids[i];
+    if (s.position.x < 0-marginW) {
+      s.position.x = sceneW+marginW;
+    }
+    if(s.position.x > sceneW+marginW) {
+      s.position.x = 0-marginW;
+    }
+    if (s.position.y < 0-marginH) {
+      s.position.y = sceneH+marginH;
+    }
+    if (s.position.y > sceneH+marginH) {
+      s.position.y = 0-marginH;
+    }
+  }
 }
 
 
