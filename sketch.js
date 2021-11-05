@@ -3,16 +3,24 @@
 // 10/19/2021
 //
 // Extra for Experts:
-// - used a new library called p5.play
-// - used a virtual camera to create an "open" experience
+// - used a new library called p5.play, used virtual camera to create open experience
 // - created my own pixel art for sprites
 // - implemented sound effects
 // - used class objects with the p5.play Group() feature along with the sprites function
-// - 
+// - created boss asteroids (more enemies)
+// - created coins and bullet upgrades
 //
-// To-Do:
-// -replayable element
-// -main menu
+// Notes:
+// - Audio bug should be fixed but it still occurs ocasionally, I tried my best to fix it using createAudio() rather then loadAudio()
+// - debug mode can be accessed by pressing P
+//
+// Instructions:
+// - Try to avoid the asteroids by shooting and get the highest score possible! Asteroids respawn every 60 seconds, boss asteroids spawn every 30 seconds (they take 10 hits to explode) 
+// - Press W to thrust your ship and press A/D to rotate
+// - Press Spacebar to shoot
+// - You can upgrade your bullets by pressing the number 1 key, they will shoot further (cost 20 coins)
+// - Have fun!
+
 
 //screen values
 let sceneW;
@@ -26,19 +34,23 @@ let gameOver = false;
 let debugMode = false;
 let score = 0;
 let money = 0;
-let shipHP = 3;
+let shipHP = 10;
+let bulletLife = 40;
 let hpBarWidth;
 
 //game timer
 let timer = 1000;
 let addPoints = timer;
-let spawnMoreAsteroids = timer*30;
+let spawnMoreAsteroids = timer*45;
+let spawnBossAsteroid = timer*5;
 let asteroidAmount = 10;
 
 //game objects
 let ship;
 let asteroids;
-let bullets;
+let bossAsteroids;
+let playerBullets;
+let enemyBullets;
 let coins;
 let particles;
 
@@ -54,15 +66,17 @@ function preload() {
   shipThrustImg = loadImage("assets/images/player_ship_thrust.png");
   shipThrustImg2 = loadImage("assets/images/player_ship_thrust_2.png");
   thrustSFX = loadSound("assets/audio/thrust.wav");
-  shootSFX = loadSound("assets/audio/shoot.wav");
-  hitSFX = loadSound("assets/audio/hit.wav");
-  collectSFX = loadSound("assets/audio/collect.wav");
+  shootSFX = createAudio("assets/audio/shoot.wav");
+  hitSFX = createAudio("assets/audio/hit.wav");
+  collectSFX = createAudio("assets/audio/collect.wav");
+  upgradeSFX = createAudio("assets/audio/upgrade.wav");
 
   //load asteroid
   asteroidImg = loadImage("assets/images/asteroid_grey.png");
   asteroidImg2 = loadImage("assets/images/asteroid_blue.png");
+  bossAsteroidImg = loadImage("assets/images/big_asteroid.png");
   astParticleImg = loadImage("assets/images/asteroid_particles.png");
-  explodeSFX = loadSound("assets/audio/explode.wav");
+  explodeSFX = createAudio("assets/audio/explode.wav");
 
   //load bullets
   bulletsImg = loadImage("assets/images/bullet.png");
@@ -76,6 +90,10 @@ function preload() {
   smallStarsImg = loadImage("assets/images/small_star.png");
   galaxyImg = loadImage("assets/images/galaxy.png");
 
+  //load upgrade
+  bulletUpgradeImg = loadImage("assets/images/bullet_upgrade.png");
+  bulletUpgradeMaxImg = loadImage("assets/images/bullet_upgrade_finished.png");
+
   //music
   musicLoop = createAudio("assets/audio/madlibs_assignment_reference.mp3");
   musicLoopSecret = loadSound("assets/audio/wunna.mp3");
@@ -83,7 +101,7 @@ function preload() {
 }
 
 function setup() {
-  //create window
+  
   // if (windowHeight < windowWidth) {
   //   createCanvas(windowHeight*0.9, windowHeight*0.9);
   // }
@@ -92,6 +110,7 @@ function setup() {
   // }
 
   // createCanvas(1280*0.9, 800*0.9);
+
   createCanvas(windowWidth, windowHeight);
 
   //defines the extended camera scene for the player ship, you can extend these values for a bigger play area
@@ -109,10 +128,12 @@ function setup() {
   createShip(width/2, height/2, 50, 50, 5, shipHP);
 
   //create bullets
-  bullets = new Group();
+  playerBullets = new Group();
+  enemyBullets = new Group();
   
   //create asteroids group, spawn 30 asteroids at start of game
   asteroids = new Group();
+  bossAsteroids = new Group();
   for (let i=0; i<30; i++) {
     createAsteroid(random(width), random(height), 3);
   } 
@@ -149,9 +170,10 @@ function draw() {
     //all sprites are drawn, goes by layer order
     drawSprites(bg);
     drawSprites(asteroids);
+    drawSprites(bossAsteroids);
     drawSprites(coins);
     drawSprites(particles);
-    drawSprites(bullets);
+    drawSprites(playerBullets);
     drawSprite(ship);
     
     //checks for collision
@@ -174,6 +196,7 @@ function draw() {
   } 
 }
 
+//unused minimap idea
 function createMiniMap() {
   let miniMapW = 200;
   let miniMapH = 200;
@@ -192,7 +215,7 @@ function createShip(x, y, w, h, speed, hp) {
   ship.debug = debugMode;
 }
 
-function createAsteroid(x, y, size, speed) {
+function createAsteroid(x, y, size) {
   //create an asteroid and defining values
   let asteroid = createSprite(x, y);
   asteroidSprite = random([asteroidImg, asteroidImg2]);
@@ -219,23 +242,46 @@ function createAsteroid(x, y, size, speed) {
   return asteroid;
 }
 
-function createBullets() {
+//big boss asteroid
+function createBossAsteroid(x, y, hp) {
+  let asteroid = createSprite(x, y);
+  asteroid.addImage(bossAsteroidImg);
+  asteroid.setCollider("circle", 0, 0, 45);
+  asteroid.scale = 1.5;
+  asteroid.mass = 5;
+  asteroid.setSpeed(3, random(360));
+  asteroid.rotationSpeed = random(0.5, 1);
+  asteroid.useQuadTree = true;
+  asteroid.health = hp;
+  //push to group
+  bossAsteroids.add(asteroid);
+  return asteroid;
+} 
+
+function createBullets(type) {
   //create a bullet sprite and assign values
-  let bullet = createSprite(ship.position.x, ship.position.y);
-  bullet.addImage(bulletsImg);
-  bullet.life = 50;
-  bullet.rotateToDirection = true;
-  bullet.setSpeed(ship.getSpeed()+6, ship.rotation);
-  bullet.debug = debugMode;
-  bullets.add(bullet);
+  if (type === "player") {
+    let bullet = createSprite(ship.position.x, ship.position.y);
+    bullet.addImage(bulletsImg);
+    bullet.life = bulletLife;
+    bullet.rotateToDirection = true;
+    bullet.setSpeed(ship.getSpeed()+6, ship.rotation);
+    bullet.debug = debugMode;
+    playerBullets.add(bullet);
+  }
 }
 
 function checkCollision() {
   //object collision
   asteroids.bounce(asteroids);
   asteroids.bounce(coins);
+  bossAsteroids.bounce(bossAsteroids);
+  bossAsteroids.bounce(asteroids);
+  bossAsteroids.bounce(coins);
   ship.overlap(asteroids, shipHitAsteroid);
-  bullets.overlap(asteroids, bulletsHitAsteroid);
+  ship.overlap(bossAsteroids, shipHitBossAsteroid);
+  playerBullets.overlap(asteroids, bulletsHitAsteroid);
+  playerBullets.overlap(bossAsteroids, bulletsHitBossAsteroid);
   ship.overlap(coins, shipTouchCoin);
   
 }
@@ -250,10 +296,8 @@ function bulletsHitAsteroid(bullets, asteroids) {
   }
 
   //explode sound effect
-  explodeSFX.playMode("sustain");
-  if (!explodeSFX.isPlaying()) {
-    explodeSFX.play();
-  }
+  explodeSFX.play();
+  
 
   //particle effect
   for (let i=0; i<10; i++) {
@@ -274,7 +318,6 @@ function bulletsHitAsteroid(bullets, asteroids) {
   coin.scale = 0.8;
   coin.life = 1000;
   coin.setCollider("circle", 0 , 0, 75);
-  coin.debug = debugMode;
   coins.add(coin);
 
   //add points to score
@@ -292,23 +335,39 @@ function bulletsHitAsteroid(bullets, asteroids) {
   asteroids.remove();
 }
 
+function bulletsHitBossAsteroid(bullets, bossAsteroids) {
+  if (bossAsteroids.health > 0) {
+    bossAsteroids.health -=1;
+  }
+  if (bossAsteroids.health <= 0) {
+    explodeSFX.play();
+    score += 300;
+    bossAsteroids.remove();
+    //drop 5 coin
+    for (let i=0; i<5; i++) {
+      coin = createSprite(bossAsteroids.position.x+random(-10, 10), bossAsteroids.position.y+random(-10, 10));
+      coin.addImage(coinImg);
+      coin.setSpeed(0, random(360));
+      coin.friction = 0.5;
+      coin.scale = 0.8;
+      coin.life = 1000;
+      coin.setCollider("circle", 0 , 0, 75);
+      coins.add(coin);
+    } 
+  }
+  bullets.remove();
+}
 
 function shipHitAsteroid(ship, asteroids) {
-  
+  //ship hp lost
   if (ship.health > 0) {
     ship.health -= 1;
   }
-
   hpBarWidth -= width*0.4/shipHP;
-  
+
+  //hit sound effect, bounce
+  hitSFX.play();
   ship.bounce(asteroids);
-
-
-  //hit sound effect
-  hitSFX.playMode("sustain");
-  if (!hitSFX.isPlaying()) {
-    hitSFX.play();
-  }
   
 
   //particle effect
@@ -325,30 +384,39 @@ function shipHitAsteroid(ship, asteroids) {
   asteroids.remove();
 }
 
+function shipHitBossAsteroid(ship, bossAsteroids) {
+  bossAsteroids.health -=1;
+  //ship hp lost
+  if (ship.health > 0) {
+    ship.health -= 1;
+  }
+  hpBarWidth -= width*0.4/shipHP;
+
+  ship.bounce(bossAsteroids);
+  hitSFX.play();
+}
+
 function shipTouchCoin(ship, coins) {
+  //if ship is in coins collision box, coins will be attracted to ship, when overlapped with centre of ship collect
   coins.attractionPoint(5, ship.position.x, ship.position.y);
   if (coins.overlapPoint(ship.position.x, ship.position.y)) {
-    collectSFX.playMode("sustain");
-    if (!collectSFX.isPlaying()) {
-      collectSFX.play();
-    }
+    collectSFX.play();
+
     money += 1;
     coins.remove();
     score += 20;
   }
+  //creates small +1 particles effect
   let plusOne = createSprite(ship.position.x, ship.position.y-40);
   plusOne.addImage(coinPlusImg);
   plusOne.setSpeed(3, 0);
   plusOne.friction = 0.2;
   plusOne.life = 50;
   drawSprite(plusOne);
-
 }
 
-
-
 function shipControls() {
-  //debug
+  //debug collision
   if (keyWentDown("P")) {
     if (!debugMode){
       debugMode = true;
@@ -360,16 +428,25 @@ function shipControls() {
       allSprites[i].debug = debugMode;
     }
   }
-  
-  //shooting controls
-  if (keyWentDown("SPACE")) {
-    createBullets();
-    shootSFX.playMode("sustain");
-    if (!shootSFX.isPlaying()) {
-      shootSFX.play();
+
+  //upgrade bullets
+  if (keyWentDown("1")) {
+    if (money >= 20) {
+      if (bulletLife < 100) {
+        money-= 20;
+        bulletLife += 10;
+        upgradeSFX.play();
+      }
     }
   }
+  
+  //shooting controls
+  if (keyWentDown("SPACE")) { 
+    createBullets("player");
+    shootSFX.play();
+  }
 
+  //moving controls
   if (keyDown("W")) { //thrust
     ship.changeAnimation("accelerating");
     ship.addSpeed(0.1, ship.rotation);
@@ -379,34 +456,34 @@ function shipControls() {
     }
   }
   else {
-    ship.changeAnimation("resting");
+    ship.changeAnimation("resting"); //resting
     thrustSFX.stop();
   }
   
   if (keyDown("A")) { //turn left
-    ship.rotation -= 2;
+    ship.rotation -= 2.5;
   }
 
   if (keyDown("D")) { //turn right
-    ship.rotation += 2;
+    ship.rotation += 2.5;
   }
 }
 
 function createBG() {
   //create background elements
-  for (let i=0; i<50; i++) {
+  for (let i=0; i<50; i++) { //regular stars
     let stars = createSprite(random(0-marginW, sceneW+marginW), random(0-marginH, sceneH+marginH));
     stars.addImage("stars", starsImg);
     stars.scale = random(0.75, 1.25);
     bg.add(stars);
   }
-  for (let i=0; i<200; i++) {
+  for (let i=0; i<200; i++) { //small stars
     let smallStars = createSprite(random(0-marginW, sceneW+marginW), random(0-marginH, sceneH+marginH));
     smallStars.addImage("small-stars", smallStarsImg);
     bg.add(smallStars);
   }
 
-  for (let i=0; i<10; i++) {
+  for (let i=0; i<10; i++) { //galaxies
     let galaxies = createSprite(random(0-marginW, sceneW+marginW), random(0-marginH, sceneH+marginH));
     galaxies.addImage("galaxies", galaxyImg);
     galaxies.scale = random(1.0, 1.5);
@@ -437,6 +514,7 @@ function controlCamera() {
 }
 
 function checkOffScreen() {
+  //check if asteroids are off screen, if so teleport to other side
   for (let i=0; i<asteroids.length; i++) {
     let s = asteroids[i];
     if (s.position.x < 0-marginW) {
@@ -466,10 +544,16 @@ function gameTimer() {
   //spawn more asteroids
   if (millis() > spawnMoreAsteroids) {
     for (let i=0; i<asteroidAmount; i++) {
-      createAsteroid(random(0, width), random(30-marginH, -20));
+      createAsteroid(random(0, width), random(30-marginH, -20), 3);
     } 
     asteroidAmount += 1;
     spawnMoreAsteroids = millis() + timer*30;
+  }
+
+  //spawn boss asteroids
+  if (millis() > spawnBossAsteroid) {
+    createBossAsteroid(random(0, width), random(30-marginH, -20), 10);
+    spawnBossAsteroid = millis() + timer*60;
   }
 }
 
@@ -477,6 +561,7 @@ function gameTimer() {
 function displayUI() {
   camera.off();
   textAlign(CENTER);
+  imageMode(CENTER);
   // textFont("Press Start 2P");
   
   //fps
@@ -503,16 +588,23 @@ function displayUI() {
   fill("white");
   textSize(60);
   text("Score: " + score, width*0.5, height*0.1);
+
+  //upgrade
+  image(bulletUpgradeImg, width*0.1, height*0.9);
+  textSize(15);
+  text("Press 1: Upgrade Bullet", width*0.1, height*0.95);
 }
 
 function gameOverScreen() {
   camera.off();
   
+  //music
   musicLoop.stop();
-
   if (!gameOverMusic.isPlaying()) {
     gameOverMusic.loop();
   }
+  
+  //create game over screen
   textSize(70);
   fill("red");
   text("GAME OVER", width/2, height*0.4);
@@ -520,14 +612,23 @@ function gameOverScreen() {
   text("SCORE: " + score, width/2, height*0.5);
   fill("limegreen");
   text("Try again? Press R!", width/2, height*0.9);
-
   imageMode(CENTER);
   image(shipThrustImg, width*0.25, height/2, 200, 200);
   image(asteroidImg, width*0.75, height/2, 200, 200);
 
+  //restart the game
   if (keyWentDown("R")) {
+    //reset some values
+    score = 0;
+    money = 0;
+    asteroidAmount = 10;
+    gameOverMusic.stop();
+    for (let i=0; i<allSprites.length; i++) {
+      allSprites[i].remove();
+    }
+
+    //run setup
     setup();
     gameOver = false;
   }
-
 }
