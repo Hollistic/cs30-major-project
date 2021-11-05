@@ -44,7 +44,7 @@ let timer = 1000;
 let addPoints = timer;
 let spawnMoreAsteroids = timer*45;
 let spawnBossAsteroid = timer*5;
-let asteroidAmount = 10;
+let asteroidAmount = 3;
 
 //game objects
 let ship;
