@@ -16,7 +16,7 @@
 //
 // Instructions:
 // - Try to avoid the asteroids by shooting and get the highest score possible! 
-// - Asteroids respawn every 60 seconds, boss asteroids spawn every 30 seconds (they take 10 hits to explode), all of these spawn at the top 
+// - Asteroids respawn every 60 seconds, boss asteroids spawn every 45 seconds (they take 10 hits to explode), all of these spawn at the top 
 // - Press W to thrust your ship and press A/D to rotate
 // - Press Spacebar to shoot
 // - You can upgrade your bullets by pressing the number 1 key, they will shoot further (cost 20 coins)
@@ -42,8 +42,8 @@ let hpBarWidth;
 //game timer
 let timer = 1000;
 let addPoints = timer;
-let spawnMoreAsteroids = timer*45;
-let spawnBossAsteroid = timer*5;
+let spawnMoreAsteroids = timer*60;
+let spawnBossAsteroid = timer*45;
 let asteroidAmount = 3;
 
 //game objects
@@ -564,13 +564,13 @@ function gameTimer() {
       createAsteroid(random(0, width), random(30-marginH, -20), 3);
     } 
     asteroidAmount += 1;
-    spawnMoreAsteroids = millis() + timer*30;
+    spawnMoreAsteroids = millis() + timer*60;
   }
 
   //spawn boss asteroids
   if (millis() > spawnBossAsteroid) {
     createBossAsteroid(random(0, width), random(30-marginH, -20), 10);
-    spawnBossAsteroid = millis() + timer*60;
+    spawnBossAsteroid = millis() + timer*45;
   }
 }
 
