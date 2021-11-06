@@ -149,9 +149,7 @@ function setup() {
   bg = new Group();
   createBG();
   
-  //testing new method of playing music
-  musicLoop.volume(0.5);
-  musicLoop.loop();
+  
 }
 
 function draw() {
@@ -456,10 +454,13 @@ function shipControls() {
     if (!thrustSFX.isPlaying()) {
       thrustSFX.play();
     }
+    //plays game music
+    musicLoop.volume(0.5);
+    musicLoop.loop();
   }
   else {
     ship.changeAnimation("resting"); //resting
-    thrustSFX.stop();
+    thrustSFX.stop();    
   }
   
   if (keyDown("A")) { //turn left
